@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SteeveIA - Chat IA Moderne</title>
+  <style>
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #eee;
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app {
+      display: flex; flex-direction: column;
+      height: 90vh; max-width: 420px; width: 100%;
+      background: #1e2a38;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    header {
+      padding: 15px 20px; background: #16202a;
+      font-weight: bold; font-size: 1.2rem;
+      text-align: center; border-bottom: 1px solid #2f3b4a;
+    }
+    #chat {
+      flex: 1; overflow-y: auto; padding: 20px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .message {
+      max-width: 75%; padding: 10px 14px;
+      border-radius: 18px; line-height: 1.4;
+      font-size: 1rem; word-wrap: break-word;
+    }
+    .user {
+      background: #4a90e2; align-self: flex-end;
+      color: white; border-bottom-right-radius: 4px;
+    }
+    .bot {
+      background: #2f3b4a; align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    form {
+      display: flex; padding: 10px 15px;
+      background: #16202a; border-top: 1px solid #2f3b4a;
+    }
+    input[type="text"] {
+      flex: 1; padding: 12px 16px; border-radius: 30px;
+      border: none; font-size: 1rem; outline: none;
+      background: #273447; color: #eee;
+    }
+    input[type="text"]:focus {
+      background: #4a90e2;
+    }
+    button {
+      margin-left: 10px; background: #4a90e2;
+      border: none; padding: 0 18px;
+      border-radius: 30px; color: white;
+      font-weight: bold; cursor: pointer;
+    }
+    button:hover {
+      background: #3b78d1;
+    }
+    #chat::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background: #4a90e2; border-radius: 3px;
+    }
+    @media (max-width: 480px) {
+      #app { height: 95vh; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>SteeveIA 🤖</header>
+    <div id="chat"></div>
+    <form id="chatForm" autocomplete="off">
+      <input type="text" id="userInput" placeholder="Pose ta question..." />
+      <button type="submit">Envoyer</button>
+    </form>
+  </div>
+
+  <script>
+(() => {
+  const chat = document.getElementById('chat');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('userInput');
+
+  const responses = [
+    {
+      keywords: ['bonjour', 'salut', 'coucou'],
+      answers: [
+        "Bonjour à toi 👋 !",
+        "Salut l’ami ! Comment ça va ?",
+        "Coucou ! Content de te revoir.",
+        "Hey ! Prêt pour discuter ?",
+        "Salut 😄 ! Une question en tête ?"
+      ]
+    },
+    {
+      keywords: ['comment ça va', 'ça va'],
+      answers: [
+        "Je vais super bien, et toi ?",
+        "Nickel ! Merci de demander 😊",
+        "Je fonctionne à plein régime !",
+        "Toujours prêt à t'aider !",
+        "En forme comme toujours, et toi ?"
+      ]
+    },
+    {
+      keywords: ['qui es-tu', 'qui es tu', 'tu es qui'],
+      answers: [
+        "Je suis SteeveIA, ton assistant IA personnel.",
+        "On m'appelle SteeveIA 🤖, enchanté !",
+        "Ton nouveau compagnon virtuel.",
+        "Une IA curieuse et toujours prête.",
+        "Je suis une IA conçue pour toi ✨"
+      ]
+    },
+    {
+      keywords: ['aide', 'aide-moi', 'aide moi'],
+      answers: [
+        "Dis-moi ce que tu veux, je suis là !",
+        "Bien sûr ! Pose ta question.",
+        "Je t’écoute, comment puis-je aider ?",
+        "Tu peux compter sur moi 💪",
+        "Je suis prêt à te donner un coup de main !"
+      ]
+    },
+    {
+      keywords: ['merci', 'thank'],
+      answers: [
+        "Avec grand plaisir 😄",
+        "Toujours là pour toi !",
+        "De rien !",
+        "Je suis ravi d’avoir pu aider.",
+        "À ton service !"
+      ]
+    },
+    {
+      keywords: ['au revoir', 'bye', 'à plus'],
+      answers: [
+        "À bientôt 👋",
+        "Bonne journée à toi !",
+        "On se retrouve vite !",
+        "À plus tard, prends soin de toi.",
+        "Bye bye ✌️"
+      ]
+    }
+  ];
+
+  const fallbackAnswers = [
+    "Bonne question, je cherche ça en ligne pour toi 🧠.",
+    "Je vais voir ce que le Web dit là-dessus 🔍.",
+    "Patiente un instant, je te trouve ça 😉",
+    "Excellente question ! Je vais fouiller Internet 👨‍💻",
+    "Hop ! Je fouille la toile pour toi 🕵️",
+    "Je n’ai pas la réponse exacte, alors je consulte le Web.",
+    "Laisse-moi explorer le Web pour t’éclairer ✨"
+  ];
+
+  function addMessage(text, sender) {
+    const msg = document.createElement('div');
+    msg.classList.add('message', sender);
+    msg.textContent = text;
+    chat.appendChild(msg);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function getResponse(userText) {
+    const text = userText.toLowerCase();
+    for (const item of responses) {
+      if (item.keywords.some(k => text.includes(k))) {
+        const randomAnswer = item.answers[Math.floor(Math.random() * item.answers.length)];
+        return { answer: randomAnswer, found: true };
+      }
+    }
+    const fallback = fallbackAnswers[Math.floor(Math.random() * fallbackAnswers.length)];
+    return { answer: fallback, found: false };
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const userText = input.value.trim();
+    if (!userText) return;
+    addMessage(userText, 'user');
+    input.value = '';
+    setTimeout(() => {
+      const { answer, found } = getResponse(userText);
+      addMessage(answer, 'bot');
+      if (!found) {
+        const query = encodeURIComponent(userText);
+        const url = `https://duckduckgo.com/?q=${query}`;
+        window.open(url, '_blank');
+      }
+    }, 600);
+  });
+
+  addMessage("Bonjour ! Je suis SteeveIA. Pose-moi une question.", 'bot');
+})();
+  </script>
+</body>
+</html>
