@@ -151,6 +151,26 @@
         "À plus tard, prends soin de toi.",
         "Bye bye ✌️"
       ]
+    },
+    {
+      keywords: ['oui'],
+      answers: [
+        "Parfait 👍",
+        "Très bien !",
+        "Cool !",
+        "Super, on continue !",
+        "Excellent choix 😄"
+      ]
+    },
+    {
+      keywords: ['non'],
+      answers: [
+        "D’accord, comme tu veux.",
+        "Pas de souci 😉",
+        "Je comprends.",
+        "Ça marche, on fait autrement.",
+        "Okay, on laisse tomber."
+      ]
     }
   ];
 
@@ -193,10 +213,14 @@
     setTimeout(() => {
       const { answer, found } = getResponse(userText);
       addMessage(answer, 'bot');
+
       if (!found) {
-        const query = encodeURIComponent(userText);
-        const url = `https://duckduckgo.com/?q=${query}`;
-        window.open(url, '_blank');
+        // Attente de 2 secondes avant d'ouvrir DuckDuckGo
+        setTimeout(() => {
+          const query = encodeURIComponent(userText);
+          const url = `https://duckduckgo.com/?q=${query}`;
+          window.open(url, '_blank');
+        }, 3000);
       }
     }, 600);
   });
@@ -205,4 +229,4 @@
 })();
   </script>
 </body>
-</html>
+</html
