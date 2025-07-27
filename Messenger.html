@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messenger - SteeveIA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      height: 100%;
+      background-color: #e5ddd5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .messenger-container {
+      width: 100%;
+      max-width: 420px;
+      height: 95vh;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #0084ff;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .chat {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #f0f0f0;
+    }
+    .message {
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 75%;
+      font-size: 0.95rem;
+      word-wrap: break-word;
+    }
+    .user-message {
+      align-self: flex-end;
+      background-color: #0084ff;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bot-message {
+      align-self: flex-start;
+      background-color: #e4e6eb;
+      color: black;
+      border-bottom-left-radius: 4px;
+    }
+    .timestamp {
+      font-size: 0.75rem;
+      color: gray;
+      margin-top: 2px;
+    }
+    .input-bar {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background-color: #fff;
+      align-items: center;
+    }
+    .input-bar input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    .input-bar button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      border-radius: 50%;
+      border: none;
+      background-color: #0084ff;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="messenger-container">
+    <div class="header">
+      <img src="https://datascientest.com/wp-content/uploads/2024/01/Intelligence-Artificielle-Generative.jpg" alt="Avatar" />
+      <div>
+        <div>SteeveIA</div>
+        <small>Actif maintenant</small>
+      </div>
+    </div>
+    <div class="chat" id="chat"></div>
+    <div class="input-bar">
+      <input type="text" id="input" placeholder="Écris ici...">
+      <button onclick="envoyer()">➤</button>
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+
+    function ajouterMessage(texte, classe) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", classe);
+      msg.innerHTML = texte + `<div class='timestamp'>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function envoyer() {
+      const texte = input.value.trim();
+      if (!texte) return;
+      ajouterMessage(texte, "user-message");
+      input.value = "";
+
+      setTimeout(() => {
+        repondreAvecSteeveIA(texte.toLowerCase());
+      }, 500);
+    }
+
+    function repondreAvecSteeveIA(question) {
+      const connues = {
+        "bonjour": ["Salut !", "Bonjour 👋", "Salut toi !", "Hello Adrien", "Hey hey 😄"],
+        "ça va": ["Oui très bien, et toi ?", "Toujours en forme 💪", "Je suis prêt à t'aider !", "Nickel 😎", "Comme une IA en pleine forme !"],
+        "qui es-tu": ["Je suis SteeveIA, ton assistant personnel 🤖", "Ton IA préférée, SteeveIA !", "Une IA qui te ressemble 😉", "L'intelligence de ton smartphone 😎", "Ton pote virtuel SteeveIA"],
+        "merci": ["Avec plaisir !", "Toujours là pour toi 😊", "Pas de quoi !", "Je suis là pour ça.", "Tu es toujours le bienvenu !"],
+        "oui": ["D'accord 👍", "Parfait !", "Je note !", "OK, bien reçu !", "On continue alors 😄"],
+        "non": ["Comme tu veux.", "Pas de souci 😌", "D'accord, on annule.", "Compris, je n’insiste pas.", "Ok, tu choisis !"],
+        "salut": ["salut","coucou","bonjour à toi"],
+        "ok": ["Ok","Cool"]
+      };
+
+      for (const cle in connues) {
+        if (question.includes(cle)) {
+          const reponses = connues[cle];
+          const reponse = reponses[Math.floor(Math.random() * reponses.length)];
+          ajouterMessage(reponse, "bot-message");
+          return;
+        }
+      }
+
+      // Question inconnue → recherche web simulée avec 5 réponses aléatoires
+      const réponsesWeb = [
+        "Attends, je vérifie ça sur DuckDuckGo 🦆...",
+        "Bonne question, je cherche une réponse.",
+        "Je n’ai pas cette info, je consulte le web.",
+        "Recherche en cours sur Internet...",
+        "Je fouille le web pour toi, une seconde..."
+      ];
+      const reponseAleatoire = réponsesWeb[Math.floor(Math.random() * réponsesWeb.length)];
+      ajouterMessage(reponseAleatoire, "bot-message");
+
+      // Attente avant ouverture de recherche web
+      setTimeout(() => {
+        const url = `https://duckduckgo.com/?q=${encodeURIComponent(question)}`;
+        window.open(url, "_blank");
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
